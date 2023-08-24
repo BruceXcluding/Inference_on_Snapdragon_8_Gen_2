@@ -139,11 +139,11 @@ root@ubuntu:/root/snpe/snpe-2.9.0.4462# pip install numpy sphinx scipy matplotli
 ```
 root@ubuntu:/root/snpe/snpe-2.9.0.4462# vim ~/.bashrc
 ```
-  add at the last：
+  Add at the last：
 ```
   export SNPE_ROOT=/root/snpe/snpe-2.9.0.4462
 ```
-  active the env
+  Active the env
 ```
 root@ubuntu:/root/snpe/snpe-2.9.0.4462# source ~/.bashrc
 ```
@@ -158,11 +158,11 @@ root@ubuntu:/root/snpe/snpe-2.9.0.4462# pip show -f tensorflow | grep Location
 ##show the tf location
 location: /usr/local/lib/python3.6/dist-packages
 ```
-  set Tensorflow SNPE env
+  Set Tensorflow SNPE env
 ```
 root@ubuntu:/root/snpe/snpe-2.9.0.4462# source bin/envsetup.sh -t /usr/local/lib/python3.6/dist-packages/tensorflow/
 ```
-  test，it would be successfully if show ```help``` info
+  Test，it would be successfully if show ```help``` info
 ```
 root@ubuntu:/root/snpe/snpe-2.9.0.4462# snpe-tensorflow-to-dlc -h
 ```
@@ -177,11 +177,11 @@ root@ubuntu:/root/snpe/snpe-2.9.0.4462# cd ..
 root@ubuntu:/root/snpe# mkdir model/tf_files && cd model
 root@ubuntu:/root/snpe/model# curl htp://download.tensorflow.org/example_images/flower_photos.tgz  | tar xz -C tf_files
 ```
-create samples
+Create samples
 ```
 root@ubuntu:/root/snpe/model# python random_sample.py tf_files/flower_photos/ samples/
 ```
-change the samples to raw format
+Change the samples to raw format
 ```
 root@ubuntu:/root/snpe/model# python ./toraw.py samples/
 root@ubuntu:/root/snpe/model# find samples/ -name *.raw > samples.txt
@@ -194,11 +194,11 @@ Download the Mobilenetv2 from tensorflow/modle hub
 root@ubuntu:/root/snpe/model# wget https://storage.googleapis.com/mobilenet_v2/checkpoints/mobilenet_v2_1.4_224.tgz
 root@ubuntu:/root/snpe/model# tar xzvf mobilenet_v2_1.4_224.tgz
 ```
-use```snpe-tensorflow-to-dlc```to convert the model to dlc format
+Use```snpe-tensorflow-to-dlc```to convert the model to dlc format
 ```
 root@ubuntu:/root/snpe/model# snpe-tensorflow-to-dlc --input_network ../mobilenet/mobilenet_v2_1.4_224_frozen.pb --input_dim input "1,224,224,3" --out_node MobilenetV2/Predictions/Reshape_1
 ```
-quantization
+Quantization
 ```
 root@ubuntu:/root/snpe/model# snpe-dlc-quantize --input_dlc mobilenet_v2_1.4_224_frozen..dlc --output_dlc mobilenet_v2_1.4_224_frozen_q.dlc --input_list samples.txt
 ```
@@ -210,7 +210,7 @@ Install android-tools-adb
 root@ubuntu:/root# apt update
 root@ubuntu:/root# apt install android-tools-adb android-tools-fastboot
 ```
-start```adb```service
+Start```adb```service
 ```
 root@ubuntu:/root# adb start-server
 ```
@@ -229,7 +229,7 @@ root@ubuntu:/root# adb devices
 List of devices attached
 3a7c328c	device
 ```
-login the device
+Login the device
  ```
 root@ubuntu:/root#  adb shell
 ```
@@ -252,7 +252,7 @@ $SNPE_ROOT/bin/aarch64-oe-linux-gcc9.3
 $SNPE_ROOT/bin/aarch64-ubuntu-gcc7.5
 ```
 If the device is ```architecture: armeabi-v7a```, choose```arm-android-clang8.0``` ；or ```arm64-v8a``` choose ```aarch64-android-clang8.0```. We choose the binares from ```aarch64-android-clang8.0```, because the Xiaomi 13pro is the second architecture.
-push ```lib```  和  ```bin``` to the device
+Push ```lib```  和  ```bin``` to the device
 ```
 root@ubuntu:/root# export SNPE_TARGET_ARCH=arm-android-clang8.0
 root@ubuntu:/root# export SNPE_TARGET_STL=libc++_shared.so
