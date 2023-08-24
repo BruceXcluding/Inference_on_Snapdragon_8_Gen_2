@@ -221,28 +221,28 @@ Permit USB debug and connet to Linux host with USB
       <p class="sphinxhide" align="center"><sub>The image source from network. If there is any infringement, please contact to delete</sub></p>
      
 
- 检查是否以连接手机
- 终端可以看到输出，报考手机信息
+Check if the device is connected
+The terminal can see the output
  ```
 root@ubuntu:/root# adb devices
-## 显示
+## show
 List of devices attached
 3a7c328c	device
 ```
-使用如下命令登陆手机
+login the device
  ```
 root@ubuntu:/root#  adb shell
 ```
 
-首次登陆需要magisk授予root权限
+First login requires magisk root permission
 
   ![11](./images/1_1.png) 
  
 
-## 手机部署SNPE以及运行推理
+## Deploy SNPE on the device and run inference
 
-#### 1. 将二进制文件推送至手机
-SNPE SDK提供了Linux以及Android的二进制文件在如下目录中：
+#### 1. Push the binaries to the device
+SNPE SDK provides Linux and Android binaries(The fold name may be not the same in different snpe version)：
 ```
 $SNPE_ROOT/bin/x86_64-linux-clang
 $SNPE_ROOT/bin/arm-android-clang8.0
@@ -251,8 +251,8 @@ $SNPE_ROOT/bin/aarch64-oe-linux-gcc8.2
 $SNPE_ROOT/bin/aarch64-oe-linux-gcc9.3
 $SNPE_ROOT/bin/aarch64-ubuntu-gcc7.5
 ```
-我们在安卓手机上运行，如果是```architecture: armeabi-v7a```选择```arm-android-clang8.0``` ；如果是```arm64-v8a```，选择```aarch64-android-clang8.0```，小米13pro是后一种架构，我们选择```aarch64-android-clang8.0```下的二进制文件
-使用以下命令，将必要的```lib```  和  ```bin```推到安卓机上
+If the device is ```architecture: armeabi-v7a```, choose```arm-android-clang8.0``` ；or ```arm64-v8a``` choose ```aarch64-android-clang8.0```. We choose the binares from ```aarch64-android-clang8.0```, because the Xiaomi 13pro is the second architecture.
+push ```lib```  和  ```bin``` to the device
 ```
 root@ubuntu:/root# export SNPE_TARGET_ARCH=arm-android-clang8.0
 root@ubuntu:/root# export SNPE_TARGET_STL=libc++_shared.so
@@ -268,7 +268,7 @@ root@ubuntu:/root# adb push $SNPE_ROOT/bin/$SNPE_TARGET_ARCH/snpe-net-run /data/
 root@ubuntu:/root# adb push $SNPE_ROOT/bin/$SNPE_TARGET_ARCH/snpe-throughput-net-run /data/local/tmp/snpeexample/$SNPE_TARGET_ARCH/bin
 ```
 
-#### 2. 将数据及模型推送至手机
+#### 2. Push the model and data to the device
 ```
 root@ubuntu:/root# cd snpe/model
 
@@ -279,12 +279,12 @@ root@ubuntu:/root/snpe/model# adb push samples.txt /data/local/tmp/mobilenetv2
 root@ubuntu:/root/snpe/model# adb push mobilenet_v2_1.4_224_frozen.dlc /data/local/tmp/mobilenetv2s /data/local/tmp/mobilenetv2
 root@ubuntu:/root/snpe/model# adb push mobilenet_v2_1.4_224_frozen_q.dlc /data/local/tmp/mobilenetv2
 ```
-#### 3. 在安卓机上设置环境变量
-进入adb shell并切换到root，注意每次进入adb shell 都需要重新设置环境
+#### 3. Set the environment on the device
+Enter the adb shell and switch to root. Note: Every time you enter the adb shell, you need to reset the environment
 ```
 root@ubuntu:/root/snpe/model# adb shell
 
-##手机root标志为“#”
+##root symbol on the device is “#”
 nuwa:/ $ su root
 nuwa:/ #
 
@@ -292,55 +292,55 @@ nuwa:/ # export SNPE_TARGET_ARCH=aarch64-android-clang8.0
 nuwa:/ # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/data/local/tmp/snpeexample/$SNPE_TARGET_ARCH/lib
 nuwa:/ # export PATH=$PATH:/data/local/tmp/snpeexample/$SNPE_TARGET_ARCH/bin
 
-### DSP LIB的路径每个手机不同，参考官网
+### The path of DSP LIB is different for each device, please refer to the official website
 nuwa# export ADSP_LIBRARY_PATH="/data/local/tmp/snpeexample/dsp/lib;/system/vendor/lib/rfsa/adsp"
 
-### 测试环境
+### Test
 nuwa:/ # snpe-net-run -h
 
 ```
-#### 4. 运行推理及输出
+#### 4. Reference and throughput
 
 推理结果默认保存在output中，运行时制定```--output_dir```参数，指定不同路径
-（1）使用CPU推理及输出
+（1）CPU
 ```
 nuwa:/ # cd /data/local/tmp/mobilenetv2
 
-## 推理结果会保存到指定目录下
+## The results will be saved to the specified directory
 nuwa:/ # snpe-net-run --container mobilenet_v2_1.4_224_frozen.dlc --input_list samples --output_dir cpu
 
-## 会在屏幕打印出信息
+## Printed output
 nuwa:/ # snpe-throughput-net-run --container mobilenet_v2_1.4_224_frozen.dlc --duration 10 --perf_profile burst --use_cpu
 
 [Thread 0 - cpu_float32] 43.6138 infs/sec - Number of images processed: 437 - Build time: 48593 microseconds - Elapsed time: 10020649 microseconds - Real time: 10019761 microseconds - Teardown time: 8047 microseconds - Batch : 1
 Total throughput: 43.6138 infs/sec
 ```
 
-（2）使用GPU推理及输出
+（2）GPU
 ```
-## 推理结果会保存到指定目录下
+## The results will be saved to the specified directory
 nuwa:/ # snpe-net-run --container mobilenet_v2_1.4_224_frozen.dlc --input_list samples --output_dir gpu --use_gpu
 
-## 会在屏幕打印出信息
+## Printed output
 nuwa:/ # snpe-throughput-net-run --container mobilenet_v2_1.4_224_frozen.dlc --duration 10 --perf_profile burst --use_gpu
 
 [Thread 0 - gpu_float32_16_hybrid] 120.149 infs/sec - Number of images processed: 1077 - Build time: 875167 microseconds - Elapsed time: 10001786 microseconds - Real time: 9998828 microseconds - Teardown time: 24321 microseconds - Batch : 1
 Total throughput: 120.149 infs/sec
 ```
-（3）使用DSP推理及输出
+（3）DSP
 ```
-## 推理结果会保存到指定目录下
+## The results will be saved to the specified directory
 nuwa:/ # snpe-net-run --container mobilenet_v2_1.4_224_frozen_q.dlc --input_list samples --output_dir dsp --use_dsp
 
-## 会在屏幕打印出信息
+## Printed output
 nuwa:/ # snpe-throughput-net-run --container mobilenet_v2_1.4_224_frozen.dlc --duration 10 --perf_profile burst --use_dsp
 
 [Thread 0 - dsp_fixed8_tf] 1581.96 infs/sec - Number of images processed: 15803 - Build time: 657077 microseconds - Elapsed time: 10000188 microseconds - Real time: 9989524 microseconds - Teardown time: 10750 microseconds - Batch : 1
 Total throughput: 1581.96 infs/sec     
 ```
-#### 5.将推理结果拉回主机并分析
+#### 5.Pull the inference results back to the host and analyze them
 
-将运行结果从安卓机pull到host
+Pull from the device to host
 ```
 root@ubuntu:/root# cd snpe/model
 root@ubuntu:/root/snpe/model# adb pull /data/local/tmp/mobilenetv2/cpu .
@@ -348,7 +348,7 @@ root@ubuntu:/root/snpe/model# adb pull /data/local/tmp/mobilenetv2/gpu .
 root@ubuntu:/root/snpe/model# adb pull /data/local/tmp/mobilenetv2/dsp .
 
 ```
-使用分析工具做结果分析
+Result analysis with snpe tool
 CPU
 ```
 root@ubuntu:/root# cd snpe/snpe-2.9.0.4462/bin/x86_64-linux-clang
